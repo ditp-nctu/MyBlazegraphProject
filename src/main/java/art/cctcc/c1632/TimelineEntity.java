@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
+import static java.util.function.Predicate.not;
 import lombok.Getter;
 import lombok.ToString;
 import org.openrdf.model.Statement;
@@ -79,6 +80,7 @@ public class TimelineEntity {
   public String getEntityId() {
 
     return Arrays.stream(media.split("[/.]"))
+            .filter(not("MyBlazegraphProject"::equals))
             .sorted(Comparator.comparing(String::length, Comparator.reverseOrder()))
             .findFirst().get();
   }

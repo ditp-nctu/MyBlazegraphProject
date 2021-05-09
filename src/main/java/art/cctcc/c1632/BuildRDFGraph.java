@@ -26,8 +26,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Properties;
 import org.openrdf.OpenRDFException;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
 
 /**
@@ -44,36 +42,39 @@ public class BuildRDFGraph {
             .build()
             .parse();
 
-    final Properties props = new Properties();
+    timelineEntities.stream()
+            .peek(entity -> System.out.println(entity.getEntityId()))
+            .map(TimelineEntity::getAllTriples)
+            .flatMap(List::stream)
+            .forEach(System.out::println);
 
     /*
-		 * For more configuration parameters see
-		 * http://www.blazegraph.com/docs/api/index.html?com/bigdata/journal/BufferMode.html
+     * For more configuration parameters see
+     * http://www.blazegraph.com/docs/api/index.html?com/bigdata/journal/BufferMode.html
      */
+    final var props = new Properties();
+
     props.put(Options.BUFFER_MODE, BufferMode.DiskRW); // persistent file system located journal
     props.put(Options.FILE, "/tmp/blazegraph/blazegraph.jnl"); // journal file location
 
-    final BigdataSail sail = new BigdataSail(props); // instantiate a sail
-    final Repository repo = new BigdataSailRepository(sail); // create a Sesame repository
+    final var sail = new BigdataSail(props); // instantiate a sail
+    final var repo = new BigdataSailRepository(sail); // create a Sesame repository
 
     repo.initialize();
 
     try {
-      // open repository connection
-      RepositoryConnection cxn = repo.getConnection();
-      // upload data to repository
+      var cxn = repo.getConnection(); // open repository connection      
       try {
         cxn.begin();
-        for (TimelineEntity timelineEntity : timelineEntities) {
-          cxn.add(timelineEntity.getAllTriples());
+        for (var entity : timelineEntities) {
+          cxn.add(entity.getAllTriples());
         }
-        cxn.commit();
+        cxn.commit(); // upload data to repository
       } catch (OpenRDFException ex) {
         cxn.rollback();
         throw ex;
       } finally {
-        // close the repository connection
-        cxn.close();
+        cxn.close();  // close the repository connection
       }
     } finally {
       repo.shutDown();
