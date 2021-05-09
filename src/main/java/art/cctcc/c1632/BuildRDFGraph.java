@@ -19,13 +19,13 @@ import com.bigdata.journal.BufferMode;
 import com.bigdata.journal.Options;
 import com.bigdata.rdf.sail.BigdataSail;
 import com.bigdata.rdf.sail.BigdataSailRepository;
+import com.opencsv.bean.CsvToBeanBuilder;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.List;
 import java.util.Properties;
 import org.openrdf.OpenRDFException;
-import org.openrdf.model.Literal;
-import org.openrdf.model.Statement;
-import org.openrdf.model.impl.LiteralImpl;
-import org.openrdf.model.impl.StatementImpl;
-import org.openrdf.model.impl.URIImpl;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
@@ -36,7 +36,14 @@ import org.openrdf.repository.RepositoryException;
  */
 public class BuildRDFGraph {
 
-  public static void main(String[] args) throws RepositoryException {
+  public static void main(String[] args) throws FileNotFoundException, IOException, RepositoryException {
+
+    var filename = BuildRDFGraph.class.getResource("/TimelieJS.csv").getFile();
+    var timelineEntities = new CsvToBeanBuilder<TimelineEntity>(new FileReader(filename))
+            .withType(TimelineEntity.class)
+            .build()
+            .parse();
+
     final Properties props = new Properties();
 
     /*
@@ -44,7 +51,7 @@ public class BuildRDFGraph {
 		 * http://www.blazegraph.com/docs/api/index.html?com/bigdata/journal/BufferMode.html
      */
     props.put(Options.BUFFER_MODE, BufferMode.DiskRW); // persistent file system located journal
-    props.put(Options.FILE, "/tmp/blazegraph/test.jnl"); // journal file location
+    props.put(Options.FILE, "/tmp/blazegraph/blazegraph.jnl"); // journal file location
 
     final BigdataSail sail = new BigdataSail(props); // instantiate a sail
     final Repository repo = new BigdataSailRepository(sail); // create a Sesame repository
@@ -52,19 +59,14 @@ public class BuildRDFGraph {
     repo.initialize();
 
     try {
-      // prepare a statement
-      final URIImpl subject = new URIImpl("http://blazegraph.com/Blazegraph");
-      final URIImpl predicate = new URIImpl("http://blazegraph.com/says");
-      final Literal object = new LiteralImpl("hello");
-      final Statement stmt = new StatementImpl(subject, predicate, object);
-
       // open repository connection
       RepositoryConnection cxn = repo.getConnection();
-
       // upload data to repository
       try {
         cxn.begin();
-        cxn.add(stmt);
+        for (TimelineEntity timelineEntity : timelineEntities) {
+          cxn.add(timelineEntity.getAllTriples());
+        }
         cxn.commit();
       } catch (OpenRDFException ex) {
         cxn.rollback();
