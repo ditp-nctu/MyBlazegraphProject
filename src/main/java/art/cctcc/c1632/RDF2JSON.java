@@ -90,6 +90,7 @@ public class RDF2JSON {
                     .put("year", Integer.valueOf(bindingSet.getValue("year").stringValue()))
                     .put("month", Integer.valueOf(bindingSet.getValue("month").stringValue()))
                     .put("day", Integer.valueOf(bindingSet.getValue("day").stringValue()))
+                    .put("hour", Integer.valueOf(bindingSet.getValue("hour").stringValue()))
                     .put("minute", Integer.valueOf(bindingSet.getValue("minute").stringValue()));
             var text = new JSONObject()
                     .put("headline", bindingSet.getValue("headline").stringValue())
