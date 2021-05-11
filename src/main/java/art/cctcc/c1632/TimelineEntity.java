@@ -73,7 +73,7 @@ public class TimelineEntity {
     var hhmm = this.time.split(":");
     var hour = Integer.valueOf(hhmm[0]);
     var minute = Integer.valueOf(hhmm[1]);
-    var date = String.format("%d-%02d-%02dT%02d:%02d:00Z", year, month, day, hour, minute);
+    var date = String.format("%d-%02d-%02dT%02d:%02d:00+08:00", year, month, day, hour, minute);
     return Date.from(Instant.parse(date));
   }
 
