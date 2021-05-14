@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package art.cctcc.c1632;
+package art.cctcc.c1632.timeline;
 
 import com.bigdata.rdf.internal.XSD;
 import com.opencsv.bean.CsvBindByName;

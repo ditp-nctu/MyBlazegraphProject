@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package art.cctcc.c1632;
+package art.cctcc.c1632.timeline;
 
 import com.bigdata.journal.BufferMode;
 import com.bigdata.journal.Options;
@@ -36,7 +36,7 @@ public class BuildRDFGraph {
 
   public static void main(String[] args) throws FileNotFoundException, IOException, RepositoryException {
 
-    var filename = BuildRDFGraph.class.getResource("/TimelieJS.csv").getFile();
+    var filename = BuildRDFGraph.class.getResource("/timeline/data.csv").getFile();
     var timelineEntities = new CsvToBeanBuilder<TimelineEntity>(new FileReader(filename))
             .withType(TimelineEntity.class)
             .build()
