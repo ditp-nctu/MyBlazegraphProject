@@ -32,6 +32,7 @@ import java.util.TimeZone;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import lombok.Getter;
+import lombok.Setter;
 import org.openrdf.model.Statement;
 import org.openrdf.model.impl.ValueFactoryImpl;
 
@@ -48,23 +49,23 @@ public class PhotoExif {
    */
   public static final String EXIF = "http://www.w3.org/2003/12/exif/ns#";
 
-  Path path;
-  Metadata metadata;
+  private Path path;
+  private Metadata metadata;
 
-  Date ifd0_datetime;
-  int ifd0_orientation;
+  private Date ifd0_datetime;
+  private int ifd0_orientation;
 
-  long jpeg_imageHeight;
-  long jpeg_imageWidth;
+  private long jpeg_imageHeight;
+  private long jpeg_imageWidth;
 
-  Date subIFD_datetime_original;
+  private Date subIFD_datetime_original;
 
-  Rational gps_TimeStamp;
-  String gps_DateStamp;
+  private Rational gps_TimeStamp;
+  private String gps_DateStamp;
 
-  String file_name;
-  int file_size;
-  Date file_modifiedDate;
+  private String file_name;
+  private int file_size;
+  private Date file_modifiedDate;
 
   public PhotoExif(Path path, Metadata metadata) {
 
@@ -124,13 +125,13 @@ public class PhotoExif {
   public String toString() {
     return "PhotoExif{"
             + "\n\tpath=" + path
-            + "\n\tifd0_datetime=\t" + ifd0_datetime.toInstant().atZone(ZoneId.systemDefault())
+            + "\n\tifd0_datetime=\t" + ifd0_datetime
             + "\n\tifd0_orientation=\t" + ifd0_orientation
             + "\n\tjpeg_imageHeight=\t" + jpeg_imageHeight
             + "\n\tjpeg_imageWidth=\t" + jpeg_imageWidth
             + "\n\tgps_TimeStamp=\t" + gps_TimeStamp
             + "\n\tgps_DateStamp=\t" + gps_DateStamp
-            + "\n\tsubIFD_datetime_original=\t" + subIFD_datetime_original.toInstant().atZone(ZoneId.systemDefault())
+            + "\n\tsubIFD_datetime_original=\t" + subIFD_datetime_original
             + "\n\tfile_name=\t" + file_name
             + "\n\tfile_size=\t" + file_size
             + "\n}";
