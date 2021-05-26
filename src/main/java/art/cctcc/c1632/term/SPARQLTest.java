@@ -16,8 +16,10 @@
 package art.cctcc.c1632.term;
 
 import com.bigdata.rdf.sail.webapp.client.RemoteRepositoryManager;
+import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
 
 /**
@@ -25,6 +27,19 @@ import org.openrdf.query.QueryLanguage;
  * @author Jonathan Chang, Chun-yien <ccy@musicapoetica.org>
  */
 public class SPARQLTest {
+
+  static String default_query
+          = """
+            SELECT ?type ?property ?literal
+            WHERE { 
+              ?s ?property ?o ; 
+                 a ?type
+              FILTER (?type != rdf:type)
+              BIND (IF (isIRI(?o), "IRI", "Literal") AS ?literal)
+            } 
+            GROUP BY ?type ?property ?literal
+            ORDER BY ?type ?literal
+            """;
 
   public static void main(String[] args) {
 
@@ -39,11 +54,11 @@ public class SPARQLTest {
       System.exit(-1);
     }
     String url = args[0]; //"http://23.239.21.18:9999/sparql";
-    String query = (args.length > 1)
+    String query = (args.length > 1 && !"-".equals(args[1]))
             ? args[1]
-            : "SELECT * WHERE { ?s ?p ?o } LIMIT 10";
+            : "default";
     try ( var manager = new RemoteRepositoryManager()) {
-      System.out.println("Connecting to SPARQL Endpoint " + url + "...");
+      System.out.println("Connecting to SPARQL Endpoint " + url + "...\n");
       final var repo = manager.getRepositoryForURL(url)
               .getBigdataSailRemoteRepository();
       repo.initialize();
@@ -52,16 +67,30 @@ public class SPARQLTest {
         try {
           final var tupleQuery = cxn.prepareTupleQuery(
                   QueryLanguage.SPARQL,
-                  query);
+                  "default".equals(query) ? default_query : query);
           final var result = tupleQuery.evaluate();
+          final var result_list = new ArrayList<BindingSet>();
           try {
-            while (result.hasNext()) {
-              var rec = result.next();
-              System.out.printf("%s\t%s\t%s\n",
-                      rec.getValue("s"),
-                      rec.getValue("p"),
-                      rec.getValue("o")
-              );
+            if ("default".equals(query)) {
+              int width1 = 0, width2 = 0;
+              while (result.hasNext()) {
+                var rec = result.next();
+                result_list.add(rec);
+                var current_width1 = rec.getValue("type").toString().length();
+                var current_width2 = rec.getValue("property").toString().length();
+                width1 = current_width1 > width1 ? current_width1 : width1;
+                width2 = current_width2 > width2 ? current_width2 : width2;
+              }
+              final var template = "%-" + width1 + "s  %-7s  %-" + width2 + "s\n";
+              result_list.forEach(rec -> System.out.printf(
+                      template,
+                      rec.getValue("type"),
+                      rec.getValue("literal").stringValue(),
+                      rec.getValue("property")));
+            } else {
+              while (result.hasNext()) {
+                System.out.println(result.next());
+              }
             }
           } finally {
             result.close();
