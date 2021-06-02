@@ -1,0 +1,116 @@
+/*
+ * Copyright 2021 Jonathan Chang, Chun-yien <ccy@musicapoetica.org>.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package art.cctcc.c1632.ncl;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
+//import org.apache.jena.rdf.model.Model;
+//import org.apache.jena.rdf.model.ModelFactory;
+//import org.apache.jena.rdf.model.Resource;
+//import static org.apache.jena.rdf.model.ResourceFactory.createResource;
+//import org.apache.jena.riot.Lang;
+//import org.apache.jena.riot.RDFFormat;
+//import org.apache.jena.riot.RDFWriter;
+//import org.apache.jena.riot.RIOT;
+//import org.apache.jena.vocabulary.OWL2;
+//import org.apache.jena.vocabulary.RDFS;
+import org.jsoup.Jsoup;
+
+/**
+ *
+ * @author Jonathan Chang, Chun-yien <ccy@musicapoetica.org>
+ */
+public class BookInfoRetriever {
+
+  static final String template = "https://aleweb.ncl.edu.tw/F/?func=find-d&find_code=ISBN&request=%s";
+//  static final Model model = ModelFactory.createDefaultModel();
+//  static final Resource BOOK = model.createResource(Chapter.SCHEMA + "Book");
+
+  public static void main(String[] args) throws IOException {
+
+    var works = List.of(
+            "9789865501259",
+            "9789864762668"
+    );
+
+//    model.setNsPrefix("", "http://myjinyongontology.info/");
+    for (String entry : works) {
+      System.out.println("Processing " + entry);
+
+      var book_info = extract(entry);
+//      chapters.stream()
+//              .peek(System.out::println)
+//              .map(Chapter::getTriples)
+//              .forEach(model::add);
+    }
+//    var output = Path.of(System.getProperty("user.dir"), "output", "jy_book_chapter.ttl");
+//    output.toFile().getParentFile().mkdirs();
+//    RDFWriter.create()
+//            .set(RIOT.symTurtleDirectiveStyle, "sparql")
+//            .lang(Lang.TURTLE)
+//            .format(RDFFormat.TURTLE)
+//            .source(model)
+//            .output(output.toString());
+  }
+
+  public static BookInfo extract(String isbn) throws IOException {
+
+    var url = String.format(template, isbn);
+    System.out.println("contacting url " + url);
+    var query_doc = Jsoup.connect(url).get();
+    var href = query_doc.getElementsByTag("tr").stream()
+            .filter(e -> e.toString().contains(isbn))
+            .filter(e -> !e.getElementsByAttribute("href").isEmpty())
+            .map(e -> e.getElementsByAttribute("href").get(0))
+            .map(e -> e.attr("href"))
+            .findFirst().orElse(null);
+    if (href == null) {
+      System.out.println("ISBN " + isbn + " cannot be found from ncl catalogue.");
+      return null;
+    }
+    href = href.replace("short-0", "full-set-set") + "&set_entry=000001&format=001";
+    var book_doc = Jsoup.connect(href)
+            /*
+            Install the root certificate (root.crt) to prevent error.
+            Ref. https://jfrog.com/knowledge-base/how-to-resolve-unable-to-find-valid-certification-path-to-requested-target-error/
+            
+            Alternative: (but validateTLSCertificates() is deprecated)
+              .timeout(30000)
+              .userAgent("Mozilla")
+              .validateTLSCertificates(false)
+             */
+            .get();
+    /*
+      Field-by-Field Guidelines for New Records: 
+      https://www.oclc.org/bibformats/en/input.html
+     */
+    var book_info = book_doc.getElementsByTag("table").stream()
+            .filter(e -> e.hasAttr("cellspacing"))
+            .filter(e -> e.toString().contains(isbn))
+            .findFirst().get()
+            .getElementsByTag("tr").stream()
+            .map(e -> e.getElementsByClass("td1").eachText())
+            .collect(Collectors.groupingBy(
+                    list -> list.get(0),
+                    Collectors.mapping(list -> list.get(1), Collectors.toList())));
+    System.out.println("book_info = " + book_info);
+    return null;
+  }
+}
