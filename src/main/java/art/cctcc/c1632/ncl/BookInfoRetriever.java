@@ -17,6 +17,7 @@ package art.cctcc.c1632.ncl;
 
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -32,6 +33,7 @@ import java.util.stream.Collectors;
 //import org.apache.jena.vocabulary.OWL2;
 //import org.apache.jena.vocabulary.RDFS;
 import org.jsoup.Jsoup;
+import org.jsoup.helper.HttpConnection;
 
 /**
  *
@@ -55,6 +57,7 @@ public class BookInfoRetriever {
       System.out.println("Processing " + entry);
 
       var book_info = extract(entry);
+      book_info.getAllTriples().forEach(System.out::println);
 //      chapters.stream()
 //              .peek(System.out::println)
 //              .map(Chapter::getTriples)
@@ -90,10 +93,12 @@ public class BookInfoRetriever {
             /*
             Install the root certificate (root.crt) to prevent error.
             Ref. https://jfrog.com/knowledge-base/how-to-resolve-unable-to-find-valid-certification-path-to-requested-target-error/
+            e.g.,
+            keytool -importcert -keystore "%JDK_HOME%\lib\security\cacerts" -storepass changeit -file root.crt -alias "ncl-root"
             
-            Alternative: (but validateTLSCertificates() is deprecated)
+            Alternative: (validateTLSCertificates() is deprecated)
               .timeout(30000)
-              .userAgent("Mozilla")
+              .userAgent("Mozilla") // or HttpConnection.DEFAULT_UA
               .validateTLSCertificates(false)
              */
             .get();
@@ -107,10 +112,11 @@ public class BookInfoRetriever {
             .findFirst().get()
             .getElementsByTag("tr").stream()
             .map(e -> e.getElementsByClass("td1").eachText())
+            .sorted(Comparator.comparing(list->list.get(0)))
+            .peek(System.out::println)
             .collect(Collectors.groupingBy(
                     list -> list.get(0),
                     Collectors.mapping(list -> list.get(1), Collectors.toList())));
-    System.out.println("book_info = " + book_info);
-    return null;
+    return new BookInfo(isbn, book_info);
   }
 }

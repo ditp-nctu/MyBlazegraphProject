@@ -15,10 +15,35 @@
  */
 package art.cctcc.c1632.ncl;
 
+import com.bigdata.rdf.internal.XSD;
+import java.util.List;
+import java.util.Map;
+import org.openrdf.model.Statement;
+import org.openrdf.model.URI;
+import org.openrdf.model.ValueFactory;
+import org.openrdf.model.impl.ValueFactoryImpl;
+import org.openrdf.model.vocabulary.RDF;
+
 /**
  *
  * @author Jonathan Chang, Chun-yien <ccy@musicapoetica.org>
  */
-public record BookInfo(String title) {
+public record BookInfo(String isbn, Map book_info) {
 
+  private static String mybookinfo = "http://mybook.info/";
+  private static ValueFactory vf = new ValueFactoryImpl();
+  private static String schema = "https://schema.org/";
+
+  public List<Statement> getAllTriples() {
+    var subject = vf.createURI(mybookinfo, isbn);
+    return List.of(
+            vf.createStatement(subject, RDF.TYPE, vf.createURI(schema, "Book"))//,
+//            vf.createStatement(subject, vf.createURI(mybookinfo, "date"), vf.createLiteral(getDate())),
+//            vf.createStatement(subject, vf.createURI(mybookinfo, "headline"), vf.createLiteral(headline)),
+//            vf.createStatement(subject, vf.createURI(mybookinfo, "text"), vf.createLiteral(text)),
+//            vf.createStatement(subject, vf.createURI(mybookinfo, "media"), vf.createLiteral(media, XSD.ANYURI)),
+//            vf.createStatement(subject, vf.createURI(mybookinfo, "media_credit"), vf.createLiteral(media_credit)),
+//            vf.createStatement(subject, vf.createURI(mybookinfo, "media_caption"), vf.createLiteral(media_caption))
+    );
+  }
 }

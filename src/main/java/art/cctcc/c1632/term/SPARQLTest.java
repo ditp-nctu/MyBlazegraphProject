@@ -38,20 +38,24 @@ public class SPARQLTest {
               BIND (IF (isIRI(?o), "IRI", "Literal") AS ?literal)
             } 
             GROUP BY ?type ?property ?literal
-            ORDER BY ?type ?literal
-            """;
+            ORDER BY ?type ?literal """;
 
   public static void main(String[] args) {
 
     if (args.length == 0) {
-      System.out.println(
+      System.out.printf(
               """
-              Please specify SPARQL Endpoint, for example:
-              mvn exec:java@term -Dexec.args=http://your_blazegraph_ip:9999/sparql
-              You can also specify query string, like:
+              Please specify your SPARQL Endpoint by:
+              mvn exec:java@term -Dexec.args=http://{your_sparql_endpoint}:9999/sparql
+              
+              Default query is
+              
+              %s
+              
+              You can also specify it by:
               mvn exec:java@term -Dexec.args="http://your_blazegraph_ip:9999/sparql 'your_query_string'"
-              """);
-      System.exit(-1);
+              """, default_query);
+      System.exit(0);
     }
     String url = args[0]; //"http://23.239.21.18:9999/sparql";
     String query = (args.length > 1 && !"-".equals(args[1]))
