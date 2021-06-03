@@ -15,35 +15,58 @@
  */
 package art.cctcc.c1632.ncl;
 
-import com.bigdata.rdf.internal.XSD;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import org.openrdf.model.Statement;
-import org.openrdf.model.URI;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.model.impl.ValueFactoryImpl;
-import org.openrdf.model.vocabulary.RDF;
+import static org.apache.jena.rdf.model.ResourceFactory.*;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.riot.web.LangTag;
+import org.apache.jena.vocabulary.*;
 
 /**
  *
  * @author Jonathan Chang, Chun-yien <ccy@musicapoetica.org>
  */
-public record BookInfo(String isbn, Map book_info) {
+public record BookInfo(String isbn, Map<String, List<String>> book_info) {
 
-  private static String mybookinfo = "http://mybook.info/";
-  private static ValueFactory vf = new ValueFactoryImpl();
-  private static String schema = "https://schema.org/";
+  public static String mybookinfo = "http://mybook.info/";
+  public static String schema = "https://schema.org/";
+  public static String lang_tw = "zh-TW";
+
+  public String getTitle() {
+
+    var _245 = book_info.entrySet().stream()
+            .filter(e -> e.getKey().startsWith("245"))
+            .findFirst().get()
+            .getValue().get(0)
+            .split("(\\|a )|(\\|b )|( / \\|c )")[1];
+    var _246 = book_info.entrySet().stream()
+            .filter(e -> e.getKey().startsWith("246"))
+            .findFirst().orElse(Map.entry("", List.of("")))
+            .getValue().get(0);
+    _246 = _246.isEmpty() ? "" : _246.split("(\\|a )|(\\|b )|( / \\|c )")[1];
+    return _245 + _246;
+  }
+
+  private String getAuthorString() {
+
+    return book_info.entrySet().stream()
+            .filter(e -> e.getKey().startsWith("245"))
+            .findFirst().get()
+            .getValue().get(0)
+            .split("( / \\|c )")[1];
+  }
 
   public List<Statement> getAllTriples() {
-    var subject = vf.createURI(mybookinfo, isbn);
-    return List.of(
-            vf.createStatement(subject, RDF.TYPE, vf.createURI(schema, "Book"))//,
-//            vf.createStatement(subject, vf.createURI(mybookinfo, "date"), vf.createLiteral(getDate())),
-//            vf.createStatement(subject, vf.createURI(mybookinfo, "headline"), vf.createLiteral(headline)),
-//            vf.createStatement(subject, vf.createURI(mybookinfo, "text"), vf.createLiteral(text)),
-//            vf.createStatement(subject, vf.createURI(mybookinfo, "media"), vf.createLiteral(media, XSD.ANYURI)),
-//            vf.createStatement(subject, vf.createURI(mybookinfo, "media_credit"), vf.createLiteral(media_credit)),
-//            vf.createStatement(subject, vf.createURI(mybookinfo, "media_caption"), vf.createLiteral(media_caption))
-    );
+
+    var subject = createResource(mybookinfo + isbn);
+    var triples = new ArrayList<Statement>(List.of(
+            createStatement(subject, RDF.type, createResource(schema + "Book")),
+            createStatement(subject, createProperty(schema, "isbn"), createPlainLiteral(isbn)),
+            createStatement(subject, createProperty(schema, "name"), createLangLiteral(getTitle(), lang_tw)),
+            createStatement(subject, createProperty(mybookinfo, "authorString"), createLangLiteral(getAuthorString(), lang_tw))
+    ));
+    return triples;
   }
+
 }

@@ -15,15 +15,21 @@
  */
 package art.cctcc.c1632.ncl;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.stream.Collectors;
-//import org.apache.jena.rdf.model.Model;
-//import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.riot.Lang;
+import org.apache.jena.riot.RDFFormat;
+import org.apache.jena.riot.RDFWriter;
+import org.apache.jena.riot.RIOT;
 //import org.apache.jena.rdf.model.Resource;
 //import static org.apache.jena.rdf.model.ResourceFactory.createResource;
 //import org.apache.jena.riot.Lang;
@@ -33,7 +39,6 @@ import java.util.stream.Collectors;
 //import org.apache.jena.vocabulary.OWL2;
 //import org.apache.jena.vocabulary.RDFS;
 import org.jsoup.Jsoup;
-import org.jsoup.helper.HttpConnection;
 
 /**
  *
@@ -42,35 +47,37 @@ import org.jsoup.helper.HttpConnection;
 public class BookInfoRetriever {
 
   static final String template = "https://aleweb.ncl.edu.tw/F/?func=find-d&find_code=ISBN&request=%s";
-//  static final Model model = ModelFactory.createDefaultModel();
+  static final Model model = ModelFactory.createDefaultModel();
 //  static final Resource BOOK = model.createResource(Chapter.SCHEMA + "Book");
 
   public static void main(String[] args) throws IOException {
 
-    var works = List.of(
-            "9789865501259",
-            "9789864762668"
-    );
+    var works = args.length == 0
+            ? List.of(
+                    "9789865501259",
+                    "9789864762668",
+                    "9789572245965"
+            ) : Arrays.asList(args);
 
-//    model.setNsPrefix("", "http://myjinyongontology.info/");
     for (String entry : works) {
+      System.out.println("-".repeat(80));
       System.out.println("Processing " + entry);
 
       var book_info = extract(entry);
-      book_info.getAllTriples().forEach(System.out::println);
-//      chapters.stream()
-//              .peek(System.out::println)
-//              .map(Chapter::getTriples)
-//              .forEach(model::add);
+      System.out.println("-".repeat(80));
+      book_info.getAllTriples().stream()
+              .peek(System.out::println)
+              .forEach(model::add);
     }
-//    var output = Path.of(System.getProperty("user.dir"), "output", "jy_book_chapter.ttl");
-//    output.toFile().getParentFile().mkdirs();
-//    RDFWriter.create()
-//            .set(RIOT.symTurtleDirectiveStyle, "sparql")
-//            .lang(Lang.TURTLE)
-//            .format(RDFFormat.TURTLE)
-//            .source(model)
-//            .output(output.toString());
+    var output = Path.of(System.getProperty("user.dir"), "output", "my_book_info.ttl");
+    output.toFile().getParentFile().mkdirs();
+    try ( var fos = new FileOutputStream(output.toFile())) {
+      RDFWriter.create()
+              .set(RIOT.symTurtleDirectiveStyle, "sparql")
+              .lang(Lang.TTL)
+              .source(model)
+              .output(fos);
+    }
   }
 
   public static BookInfo extract(String isbn) throws IOException {
@@ -112,7 +119,7 @@ public class BookInfoRetriever {
             .findFirst().get()
             .getElementsByTag("tr").stream()
             .map(e -> e.getElementsByClass("td1").eachText())
-            .sorted(Comparator.comparing(list->list.get(0)))
+            .sorted(Comparator.comparing(list -> list.get(0)))
             .peek(System.out::println)
             .collect(Collectors.groupingBy(
                     list -> list.get(0),

@@ -1,0 +1,20 @@
+<http://mybook.info/9789572245965>
+        a                          <https://schema.org/Book> ;
+        <http://mybook.info/authorString>
+                "黃建庭作"@zh-TW ;
+        <https://schema.org/isbn>  "9789572245965" ;
+        <https://schema.org/name>  "Python程式設計 : 從入門到進階應用"@zh-TW .
+
+<http://mybook.info/9789864762668>
+        a                          <https://schema.org/Book> ;
+        <http://mybook.info/authorString>
+                "Stoyan Stefanov著 ; 楊仁和譯"@zh-TW ;
+        <https://schema.org/isbn>  "9789864762668" ;
+        <https://schema.org/name>  "React啟動與運行"@zh-TW .
+
+<http://mybook.info/9789865501259>
+        a                          <https://schema.org/Book> ;
+        <http://mybook.info/authorString>
+                "潘志霖, 丁軍, 丁力, 汪鵬, 王萌, 王鑫, 王宇, 王志春, 肖國輝, 楊成彪, 張偉編著 ; 王昊奮, 漆桂林, 陳華鈞主編"@zh-TW ;
+        <https://schema.org/isbn>  "9789865501259" ;
+        <https://schema.org/name>  "人類智慧的神殿 : AI知識圖譜實作"@zh-TW .

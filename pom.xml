@@ -13,19 +13,18 @@
         <version>3.0.0</version>
         <executions>
           <execution>
-            <goals>
-              <goal>java</goal>
-            </goals>
             <id>term</id>
+            <configuration>
+              <mainClass>art.cctcc.c1632.term.SPARQLTest</mainClass>
+            </configuration>
+          </execution>
+          <execution>
+            <id>ncl</id>
+            <configuration>
+              <mainClass>art.cctcc.c1632.ncl.BookInfoRetriever</mainClass>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <mainClass>art.cctcc.c1632.term.SPARQLTest</mainClass>
-<!--          <arguments>
-            <argument>http://23.239.21.18:9999/sparql</argument>
-            <argument>SELECT * WHERE { ?s ?p ?o }</argument>          
-          </arguments>-->
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -74,6 +73,18 @@
       <groupId>org.jsoup</groupId>
       <artifactId>jsoup</artifactId>
       <version>1.11.2</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-core</artifactId>
+      <version>4.0.0</version>
+      <type>jar</type>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.jena</groupId>
+      <artifactId>jena-arq</artifactId>
+      <version>4.0.0</version>
       <type>jar</type>
     </dependency>
   </dependencies>
