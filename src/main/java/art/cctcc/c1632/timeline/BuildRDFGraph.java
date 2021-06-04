@@ -23,6 +23,8 @@ import com.opencsv.bean.CsvToBeanBuilder;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Properties;
 import org.openrdf.OpenRDFException;
@@ -33,6 +35,8 @@ import org.openrdf.repository.RepositoryException;
  * @author Jonathan Chang, Chun-yien <ccy@musicapoetica.org>
  */
 public class BuildRDFGraph {
+
+  public static Path JNL_PATH = Path.of(System.getProperty("user.dir"), "blazegraph.jnl");
 
   public static void main(String[] args) throws FileNotFoundException, IOException, RepositoryException {
 
@@ -54,8 +58,11 @@ public class BuildRDFGraph {
      */
     final var props = new Properties();
 
+    if (JNL_PATH.toFile().exists()) {
+      Files.delete(JNL_PATH);
+    }
     props.put(Options.BUFFER_MODE, BufferMode.DiskRW); // persistent file system located journal
-    props.put(Options.FILE, "/tmp/blazegraph/blazegraph.jnl"); // journal file location
+    props.put(Options.FILE, JNL_PATH.toString()); // journal file location
 
     final var sail = new BigdataSail(props); // instantiate a sail
     final var repo = new BigdataSailRepository(sail); // create a Sesame repository

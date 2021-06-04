@@ -31,7 +31,7 @@ public class RDF2JSON {
 	 * http://www.blazegraph.com/docs/api/index.html?com/bigdata/journal/BufferMode.html
      */
     props.put(Options.BUFFER_MODE, BufferMode.DiskRW); // persistent file system located journal
-    props.put(Options.FILE, "/tmp/blazegraph/blazegraph.jnl"); // journal file location
+    props.put(Options.FILE, BuildRDFGraph.JNL_PATH.toString()); // journal file location
 
     final var sail = new BigdataSail(props); // instantiate a sail
     final var repo = new BigdataSailRepository(sail); // create a Sesame repository

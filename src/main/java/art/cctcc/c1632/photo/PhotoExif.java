@@ -87,7 +87,7 @@ public class PhotoExif {
         }
         switch (dir.getClass().getSimpleName()) {
           case "ExifIFD0Directory" -> {
-            var datetime = dir.getDate(ExifIFD0Directory.TAG_DATETIME, TimeZone.getDefault());
+            var datetime = dir.getDate(ExifIFD0Directory.TAG_DATETIME);
             this.ifd0_datetime = datetime == null ? null
                     : LocalDateTime.ofInstant(datetime.toInstant(), ZoneId.systemDefault());
             this.ifd0_orientation = dir.getInt(ExifIFD0Directory.TAG_ORIENTATION);
@@ -104,14 +104,14 @@ public class PhotoExif {
             System.out.println(dir);
           }
           case "ExifSubIFDDirectory" -> {
-            var datetime = dir.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
+            var datetime = dir.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL);
             this.subIFD_datetime_original = datetime == null ? null
                     : LocalDateTime.ofInstant(datetime.toInstant(), ZoneId.systemDefault());
           }
           case "FileSystemDirectory" -> {
             this.file_name = dir.getString(FileSystemDirectory.TAG_FILE_NAME);
             this.file_size = dir.getInt(FileSystemDirectory.TAG_FILE_SIZE);
-            var datetime = dir.getDate(FileSystemDirectory.TAG_FILE_MODIFIED_DATE, TimeZone.getDefault());
+            var datetime = dir.getDate(FileSystemDirectory.TAG_FILE_MODIFIED_DATE);
             this.file_modifiedDate = datetime == null ? null
                     : LocalDateTime.ofInstant(datetime.toInstant(), ZoneId.systemDefault());
           }

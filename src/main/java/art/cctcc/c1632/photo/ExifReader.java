@@ -34,11 +34,10 @@ public class ExifReader {
 
   public static void main(String[] args) throws URISyntaxException, IOException {
 
-    var data = Files.walk(Path.of(ExifReader.class.getResource("/photo/").toURI()))
+    var data = Files.walk(Path.of(System.getProperty("user.dir"), "photo"))
             .filter(path -> path.toFile().isFile())
             .map(path -> new PhotoExif(path, readMetadata(path)))
             .collect(Collectors.toList());
-
     data.forEach(System.out::println);
   }
 
