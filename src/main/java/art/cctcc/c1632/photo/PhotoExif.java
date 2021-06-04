@@ -15,6 +15,16 @@
  */
 package art.cctcc.c1632.photo;
 
+import java.nio.file.Path;
+import java.util.List;
+import java.util.TimeZone;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import lombok.Getter;
+import org.openrdf.model.Statement;
+import org.openrdf.model.impl.ValueFactoryImpl;
 import com.drew.lang.Rational;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.MetadataException;
@@ -22,19 +32,9 @@ import com.drew.metadata.Tag;
 import com.drew.metadata.exif.ExifIFD0Directory;
 import com.drew.metadata.exif.ExifSubIFDDirectory;
 import com.drew.metadata.exif.GpsDirectory;
-import com.drew.metadata.file.FileMetadataDirectory;
+import com.drew.metadata.file.FileSystemDirectory;
 import com.drew.metadata.jpeg.JpegDirectory;
-import java.nio.file.Path;
-import java.time.ZoneId;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import lombok.Getter;
-import lombok.Setter;
-import org.openrdf.model.Statement;
-import org.openrdf.model.impl.ValueFactoryImpl;
+import ar.com.hjg.pngj.PngReader;
 
 /**
  *
@@ -52,20 +52,20 @@ public class PhotoExif {
   private Path path;
   private Metadata metadata;
 
-  private Date ifd0_datetime;
+  private LocalDateTime ifd0_datetime;
   private int ifd0_orientation;
 
   private long jpeg_imageHeight;
   private long jpeg_imageWidth;
 
-  private Date subIFD_datetime_original;
+  private LocalDateTime subIFD_datetime_original;
 
   private Rational gps_TimeStamp;
   private String gps_DateStamp;
 
   private String file_name;
   private int file_size;
-  private Date file_modifiedDate;
+  private LocalDateTime file_modifiedDate;
 
   public PhotoExif(Path path, Metadata metadata) {
 
@@ -87,7 +87,9 @@ public class PhotoExif {
         }
         switch (dir.getClass().getSimpleName()) {
           case "ExifIFD0Directory" -> {
-            this.ifd0_datetime = dir.getDate(ExifIFD0Directory.TAG_DATETIME, TimeZone.getDefault());
+            var datetime = dir.getDate(ExifIFD0Directory.TAG_DATETIME, TimeZone.getDefault());
+            this.ifd0_datetime = datetime == null ? null
+                    : LocalDateTime.ofInstant(datetime.toInstant(), ZoneId.systemDefault());
             this.ifd0_orientation = dir.getInt(ExifIFD0Directory.TAG_ORIENTATION);
           }
           case "JpegDirectory" -> {
@@ -98,17 +100,30 @@ public class PhotoExif {
             this.gps_TimeStamp = dir.getRational(GpsDirectory.TAG_TIME_STAMP);
             this.gps_DateStamp = dir.getString(GpsDirectory.TAG_DATE_STAMP);
           }
-          case "ExifSubIFDDirectory" -> {
-            this.subIFD_datetime_original = dir.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
+          case "XmpDirectory" -> {
+            System.out.println(dir);
           }
-          case "FileMetadataDirectory" -> {
-            this.file_name = dir.getString(FileMetadataDirectory.TAG_FILE_NAME);
-            this.file_size = dir.getInt(FileMetadataDirectory.TAG_FILE_SIZE);
+          case "ExifSubIFDDirectory" -> {
+            var datetime = dir.getDate(ExifSubIFDDirectory.TAG_DATETIME_ORIGINAL, TimeZone.getDefault());
+            this.subIFD_datetime_original = datetime == null ? null
+                    : LocalDateTime.ofInstant(datetime.toInstant(), ZoneId.systemDefault());
+          }
+          case "FileSystemDirectory" -> {
+            this.file_name = dir.getString(FileSystemDirectory.TAG_FILE_NAME);
+            this.file_size = dir.getInt(FileSystemDirectory.TAG_FILE_SIZE);
+            var datetime = dir.getDate(FileSystemDirectory.TAG_FILE_MODIFIED_DATE, TimeZone.getDefault());
+            this.file_modifiedDate = datetime == null ? null
+                    : LocalDateTime.ofInstant(datetime.toInstant(), ZoneId.systemDefault());
           }
         }
       } catch (MetadataException ex) {
         Logger.getLogger(PhotoExif.class.getName()).log(Level.SEVERE, null, ex);
       }
+    }
+    if (path.toString().endsWith(".png")) {
+      var pngrMetadata = new PngReader(path.toFile()).getMetadata();
+      if (pngrMetadata.getTime() != null)
+        System.out.println("** PNG Metadata Time = " + pngrMetadata.getTimeAsString());
     }
   }
 
@@ -134,6 +149,7 @@ public class PhotoExif {
             + "\n\tsubIFD_datetime_original=\t" + subIFD_datetime_original
             + "\n\tfile_name=\t" + file_name
             + "\n\tfile_size=\t" + file_size
+            + "\n\tfile_modifiedDate=\t" + file_modifiedDate
             + "\n}";
   }
 }
