@@ -36,6 +36,15 @@ public class ExifReader {
 
     var data = Files.walk(Path.of(System.getProperty("user.dir"), "photo"))
             .filter(path -> path.toFile().isFile())
+            .filter(path -> {
+              if (path.toString().toLowerCase().endsWith(".png")
+                      && PngDateUpdater.getPngTime(path) == null) {
+                System.out.println("Skipping " + path + "because it's a PNG without Timestamp.");
+                return false;
+              } else {
+                return true;
+              }
+            })
             .map(path -> new PhotoExif(path, readMetadata(path)))
             .collect(Collectors.toList());
     data.forEach(System.out::println);
