@@ -1,3 +1,10 @@
+<http://mybook.info/9789865021993>
+        a                          <https://schema.org/Book> ;
+        <http://mybook.info/authorString>
+                "OccupyTheWeb著 ; 凱傲譯"@zh-TW ;
+        <https://schema.org/isbn>  "9789865021993" ;
+        <https://schema.org/name>  "駭客的Linux基礎入門必修課 = Getting started with networking, scripting, and security in Kali"@zh-TW .
+
 <http://mybook.info/9789572245965>
         a                          <https://schema.org/Book> ;
         <http://mybook.info/authorString>

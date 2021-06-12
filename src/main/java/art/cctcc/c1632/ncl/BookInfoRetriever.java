@@ -56,7 +56,8 @@ public class BookInfoRetriever {
             ? List.of(
                     "9789865501259",
                     "9789864762668",
-                    "9789572245965"
+                    "9789572245965",
+                    "9789865021993"
             ) : Arrays.asList(args);
 
     for (String entry : works) {
@@ -71,7 +72,7 @@ public class BookInfoRetriever {
     }
     var output = Path.of(System.getProperty("user.dir"), "output", "my_book_info.ttl");
     output.toFile().getParentFile().mkdirs();
-    try ( var fos = new FileOutputStream(output.toFile())) {
+    try (var fos = new FileOutputStream(output.toFile())) {
       RDFWriter.create()
               .set(RIOT.symTurtleDirectiveStyle, "sparql")
               .lang(Lang.TTL)

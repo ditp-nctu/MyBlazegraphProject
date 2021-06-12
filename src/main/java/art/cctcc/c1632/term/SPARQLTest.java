@@ -85,12 +85,12 @@ public class SPARQLTest {
                 width1 = current_width1 > width1 ? current_width1 : width1;
                 width2 = current_width2 > width2 ? current_width2 : width2;
               }
-              final var template = "%-" + width1 + "s  %-7s  %-" + width2 + "s\n";
+              final var template = "%-" + width1 + "s  %-" + width2 + "s  %-7s\n";
               result_list.forEach(rec -> System.out.printf(
                       template,
-                      rec.getValue("type"),
-                      rec.getValue("literal").stringValue(),
-                      rec.getValue("property")));
+                      rec.getValue("type"),                      
+                      rec.getValue("property"),
+                      rec.getValue("literal").stringValue()));
             } else {
               while (result.hasNext()) {
                 System.out.println(result.next());

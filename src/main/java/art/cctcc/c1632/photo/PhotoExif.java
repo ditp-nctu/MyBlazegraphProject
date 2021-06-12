@@ -195,7 +195,7 @@ public class PhotoExif {
     );
   }
 
-  private XMLGregorianCalendar getTimestamp() {
+  public XMLGregorianCalendar getTimestamp() {
 
     return Stream.of(
             ifd0_datetime,
