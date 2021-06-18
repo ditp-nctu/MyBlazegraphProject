@@ -17,6 +17,9 @@ package art.cctcc.c1632.term;
 
 import com.bigdata.rdf.sail.webapp.client.RemoteRepositoryManager;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.Map.Entry;
+import static java.util.function.Predicate.not;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openrdf.query.BindingSet;
@@ -40,6 +43,17 @@ public class SPARQLTest {
             GROUP BY ?type ?property ?literal
             ORDER BY ?type ?literal """;
 
+  static Map<String, String> endpoints = Map.of(
+          //"c1632", "http://23.239.21.18:9999/sparql",
+          "AlexOntology", "http://45.79.90.173:9999/blazegraph/",
+          "BlazeGraph2021", "",
+          "CollegeStory", "http://45.79.76.241:9999/blazegraph/",
+          "Mynovelontology", "http://173.230.152.120:8889/bigdata/sparql"
+  );
+
+  static String url; //;
+  static String query = "default";
+
   public static void main(String[] args) {
 
     if (args.length == 0) {
@@ -57,10 +71,28 @@ public class SPARQLTest {
               """, default_query);
       System.exit(0);
     }
-    String url = args[0]; //"http://23.239.21.18:9999/sparql";
-    String query = (args.length > 1 && !"-".equals(args[1]))
-            ? args[1]
-            : "default";
+    url = args[0];
+    if ("verify".equals(url)) {
+      endpoints.entrySet().stream()
+              .peek(e -> {
+                var title = String.format("%s: %s", e.getKey(), e.getValue().isBlank() ? "Not yet provided." : e.getValue());
+                System.out.println("-".repeat(title.length()));
+                System.out.println(title);
+                System.out.println("-".repeat(title.length()));
+              })
+              .map(Entry::getValue)
+              .filter(not(String::isBlank))
+              .forEach(SPARQLTest::test);
+    } else {
+      if (args.length > 1 && !"-".equals(args[1])) {
+        query = args[1];
+      }
+      test(url);
+    }
+  }
+
+  synchronized static void test(String url) {
+
     try ( var manager = new RemoteRepositoryManager()) {
       System.out.println("Connecting to SPARQL Endpoint " + url + "...\n");
       final var repo = manager.getRepositoryForURL(url)
@@ -88,7 +120,7 @@ public class SPARQLTest {
               final var template = "%-" + width1 + "s  %-" + width2 + "s  %-7s\n";
               result_list.forEach(rec -> System.out.printf(
                       template,
-                      rec.getValue("type"),                      
+                      rec.getValue("type"),
                       rec.getValue("property"),
                       rec.getValue("literal").stringValue()));
             } else {
