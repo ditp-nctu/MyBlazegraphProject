@@ -15,15 +15,15 @@
  */
 package art.cctcc.c1632.term;
 
-import com.bigdata.rdf.sail.webapp.client.RemoteRepositoryManager;
 import java.util.ArrayList;
 import java.util.Map;
 import java.util.Map.Entry;
 import static java.util.function.Predicate.not;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.QueryLanguage;
+import com.bigdata.rdf.sail.webapp.client.RemoteRepositoryManager;
+import java.time.LocalDateTime;
+import org.apache.log4j.Logger;
 
 /**
  *
@@ -45,9 +45,9 @@ public class SPARQLTest {
 
   static Map<String, String> endpoints = Map.of(
           //"c1632", "http://23.239.21.18:9999/sparql",
-          "AlexOntology", "http://45.79.90.173:9999/blazegraph/",
-          "BlazeGraph2021", "",
-          "CollegeStory", "http://45.79.76.241:9999/blazegraph/",
+          "AlexOntology", "http://45.79.90.173:9999/sparql",
+          "BlazeGraph2021", "http://74.207.245.150:9999/blazegraph/#query",
+          "CollegeStory", "http://45.79.76.241:9999/sparql",
           "Mynovelontology", "http://173.230.152.120:8889/bigdata/sparql"
   );
 
@@ -75,8 +75,8 @@ public class SPARQLTest {
     if ("verify".equals(url)) {
       endpoints.entrySet().stream()
               .peek(e -> {
-                var title = String.format("%s: %s", e.getKey(), e.getValue().isBlank() ? "Not yet provided." : e.getValue());
-                System.out.println("-".repeat(title.length()));
+                var title = String.format("%s: %s [Accessed %s]", e.getKey(), e.getValue(), LocalDateTime.now());
+                System.out.println("\n" + "-".repeat(title.length()));
                 System.out.println(title);
                 System.out.println("-".repeat(title.length()));
               })
@@ -138,7 +138,7 @@ public class SPARQLTest {
         repo.shutDown();
       }
     } catch (Exception ex) {
-      Logger.getLogger(SPARQLTest.class.getName()).log(Level.SEVERE, null, ex);
+      System.out.println("Verification failed.");
     }
   }
 }
